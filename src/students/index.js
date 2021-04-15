@@ -11,26 +11,6 @@ const filename = fileURLToPath(import.meta.url)
 
 const studentsJSONPath = join(dirname(filename), 'students.json')
 
-router.get('/', (req, res) => {
-    console.log('GET route')
-    const fileAsBuffer = fs.readFileSync(studentsJSONPath)
-    const fileAsString = fileAsBuffer.toString()
-    const students = JSON.parse(fileAsString)
-
-
-    res.send(students)
-})
-
-router.get('/:id', (req, res) => {
-    console.log("uniq identifier", req.params.id)
-
-    const fileAsBuffer = fs.readFileSync(studentsJSONPath)
-    const fileAsString = fileAsBuffer.toString()
-    const students = JSON.parse(fileAsString)
-    const student = students.find(s => s.ID === parseInt(req.params.id))
-    res.send(student)
-})
-
 router.post('/', (req, res) => {
     const fileAsBuffer = fs.readFileSync(studentsJSONPath)
     const fileAsString = fileAsBuffer.toString()
@@ -43,22 +23,41 @@ router.post('/', (req, res) => {
 
     fs.writeFileSync(studentsJSONPath, JSON.stringify(students))
 
-    res.status(201).send({ id: newStudent.ID })
+    res.status(201).send('created')
 })
 
-router.put('/:id', (req, res) => {
+router.post('/checkEmail', (req, res) => {
     const fileAsBuffer = fs.readFileSync(studentsJSONPath)
     const fileAsString = fileAsBuffer.toString()
     const students = JSON.parse(fileAsString)
 
-    const newStudentsArray = students.filter(student => student.ID !== req.params.id)
-    const modifiedUser = req.body
-    modifiedUser.ID = req.params.id
-    newStudentsArray.push(modifiedUser)
+    const email = req.body.email
+    const findEmail = students.find(student => student.email === email)
+    if (findEmail) {
+        res.status(200).send(true)
+    } else {
+        res.status(200).send(false)
+    }
+})
 
-    fs.writeFileSync(studentsJSONPath, JSON.stringify(newStudentsArray))
+router.get('/', (req, res) => {
+    console.log('GET route')
+    const fileAsBuffer = fs.readFileSync(studentsJSONPath)
+    const fileAsString = fileAsBuffer.toString()
+    const students = JSON.parse(fileAsString)
 
-    res.send({ data: "HELLO FROM PUT ROUTE!" })
+
+    res.status(200).send(students)
+})
+
+router.get('/:id', (req, res) => {
+    console.log("uniq identifier", req.params.id)
+
+    const fileAsBuffer = fs.readFileSync(studentsJSONPath)
+    const fileAsString = fileAsBuffer.toString()
+    const students = JSON.parse(fileAsString)
+    const student = students.find(s => s.ID === parseInt(req.params.id))
+    res.status(200).send(student)
 })
 
 router.delete('/:id', (req, res) => {
@@ -72,4 +71,22 @@ router.delete('/:id', (req, res) => {
 
     res.status(204).send()
 })
+
+
+router.put('/:id', (req, res) => {
+    const fileAsBuffer = fs.readFileSync(studentsJSONPath)
+    const fileAsString = fileAsBuffer.toString()
+    const students = JSON.parse(fileAsString)
+
+    const newStudentsArray = students.filter(student => student.ID !== req.params.id)
+    const modifiedUser = req.body
+    modifiedUser.ID = req.params.id
+    newStudentsArray.push(modifiedUser)
+
+    fs.writeFileSync(studentsJSONPath, JSON.stringify(newStudentsArray))
+
+    res.status(200).send(modifiedUser)
+})
+
+
 export default router
